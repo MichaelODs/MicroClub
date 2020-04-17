@@ -13,30 +13,119 @@
                 line-height: 30px;
                 text-align: center;
                 display: block;
-                background: #ddd;
+                background: darkseagreen;
             }
             .blocks:hover{
                 background: cornflowerblue;
             }
+            #bar{
+                text-align: center;
+                margin: auto;
+            }
+            .bar{
+                border: solid 1px black;
+                height: 25px;
+                width: 100px;
+                margin: 12px 12px;
+                text-align: center;
+                display: inline-block;
+            }
+            #bottom_bar{
+                text-align: center;
+                margin: auto;
+            }
+            .bottom_bar{
+                height: auto;
+                width: auto;
+                margin: 12px 12px;
+                text-align: center;
+                display: inline-block;
+            }
         </style>
     </head>
     <body oncontextmenu='self.event.returnValue=false'>
-        <table border="2px" id="grid"></table>
+        <div id="bar">
+            <span class="bar">剩余雷数:<label id='remain'>0</label></span>
+            <span class="bar">总雷数:<label id="all_count">0</label></span>
+            <span class="bar">计时:<label id='time'>0</label>s</span>
+        </div>
+        <table border="1" cellspacing="0" id="grid"></table>
+        <div id="bottom_bar">
+            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,15)" value="初级"></span>
+            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,40)" value="中级"></span>
+            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,65)" value="高级"></span>
+            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,100)" value="专家(以后几种很可能需要靠运气)"></span>
+            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,150)" value="地狱"></span>
+            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,223)" value="欧皇"></span>
+            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,223)" value="自定义"></span>
+        </div>
         <script>
+            var remain = document.getElementById('remain');
+            var all_count = document.getElementById('all_count');
+            var time = document.getElementById('time');
+            //计时器
+            var timer;
             var game_over = false;
             var initialize = 0;
-            var row = 10;
-            var column = 10;
-            var mine = 20;
+            var row = 15;
+            var column = 15;
+            var mine = 30;
             // 表格的数据
             var data = [];
             //是否显示这一格,0为默认不显示,1是显示,2是标记
-            var data_show = []
+            var data_show = [];
             //存储表格
             var grid = init_show();
 
+            //重新生成的表格
+            function re_init_show(row1, column1, mine1) {
+                remain.innerHTML = '0'
+                all_count.innerHTML = '0'
+                time.innerHTML = '0s'
+                row = row1;
+                column = column1;
+                mine = mine1;
+                game_over = false;
+                initialize = 0;
+                data = [];
+                data_show = [];
+                clearInterval(timer);
+                grid = init_show();
+            }
+
+            //初始化显示
+            function init_show() {
+                //生成矩阵html  <tr>--行标签 <td>--列标签
+                let gridHtml = '';
+                for (let i = 0; i < row; i++) {
+                    gridHtml += '<tr>';
+                    for (let j = 0; j < column; j++) {
+                        gridHtml += '<td><span class="blocks" onmousedown="block_click(' + i + ',' + j + ',event)"></span></td>';
+                    }
+                    gridHtml += '<tr>';
+                }
+                //写入html
+                document.getElementById('grid').innerHTML = gridHtml;
+                let grid = [];
+                let blocks = document.getElementsByClassName('blocks');
+                for (let i = 0; i < blocks.length; i += column) {
+                    grid[i / column] = [];
+                    for (let j = 0; j < column; j++) {
+                        grid[i / column][j] = blocks[i + j];
+                    }
+                }
+                return grid;
+            }
+
             //初始化表格数据
             function init(click_x,click_y) {
+                remain.innerHTML = mine.toString();
+                all_count.innerHTML = mine.toString();
+                //建立计时器
+                timer = setInterval(function () {
+                    let seconds = (parseFloat(time.innerHTML) + 1);
+                    time.innerHTML = seconds.toString();
+                }, 1000);
                 //初始化表格中的雷，并确保第一个不是雷
                 for (let i = 0; i < row; i++) {
                     data[i] = [];
@@ -47,8 +136,8 @@
                     }
                 }
                 for (let i = 0; i < mine; i++) {
-                    x = Math.floor(Math.random() * row);
-                    y = Math.floor(Math.random() * column);
+                    let x = Math.floor(Math.random() * row);
+                    let y = Math.floor(Math.random() * column);
                     if (data[x][y] !== 9 && (x!== click_x || y !== click_y)) {
                         data[x][y] = 9;
                     } else {
@@ -109,29 +198,6 @@
                 } catch (error) {}
             }
 
-            //初始化显示
-            function init_show() {
-                //生成矩阵html  <tr>--行标签 <td>--列标签
-                let gridHtml = '';
-                for (let i = 0; i < row; i++) {
-　　                gridHtml += '<tr>';
-　                  for (let j = 0; j < column; j++) {
-　　　                  gridHtml += '<td><span class="blocks" onmousedown="block_click(' + i + ',' + j + ',event)"></span></td>';
-　                  }
-　          　      gridHtml += '<tr>';
-                }
-                //写入html
-                document.getElementById('grid').innerHTML = gridHtml;
-                let grid = [];
-                let blocks = document.getElementsByClassName('blocks');
-                for (let i = 0; i < blocks.length; i += column) {
-                    grid[i / column] = [];
-                    for (let j = 0; j < column; j++) {
-                        grid[i / column][j] = blocks[i + j];
-                    }
-                }
-                return grid;
-            }
 
             function block_click(x,y,e) {
                 if (e.button === 0){
@@ -141,15 +207,20 @@
                         init(x, y);
                         open(x,y);
                     } else {
-                        open(x,y);
+                        //判断是否标记过
+                        if (data_show[x][y] !== 2){
+                            open(x,y);
+                        }
                     }
                 } else if (e.button === 2){
                     //右键单击
                     if(data_show[x][y] !== 1){
                         if (data_show[x][y] === 0){
                             data_show[x][y] = 2;
+                            remain.innerHTML = (parseInt(remain.innerHTML) - 1).toString()
                         } else if(data_show[x][y] === 2){
                             data_show[x][y] = 0;
+                            remain.innerHTML = (parseInt(remain.innerHTML) + 1).toString()
                         }
                     } 
                 }
@@ -159,6 +230,7 @@
             function reshow() {
                 //游戏结束显示所有的雷
                 if (game_over){
+                    clearInterval(timer);
                     for (let i = 0; i < row; i++) {
                         for (let j = 0; j < column; j++) {
                             if(data[i][j] === 9){
@@ -178,12 +250,12 @@
                                 } else {
                                     grid[i][j].innerHTML = data[i][j];
                                 }
-                            } else{
-                                grid[i][j].innerHTML = '';
+                            } else if (data_show[i][j] === 2){
+                                grid[i][j].innerHTML = '❌';
                             }
                         }
                     }
-                    alert('游戏结束,刷新再来一局吧');
+                    alert('boom!!! 游戏结束,刷新再来一局吧');
                     return;
                 }
                 for (let i = 0; i < row; i++) {
@@ -214,6 +286,7 @@
                     }
                 }
                 if (row * column - count === mine) {
+                    game_over = true
                     alert('你赢了');
                 }
             }
