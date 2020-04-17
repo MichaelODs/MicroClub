@@ -41,6 +41,10 @@
                 text-align: center;
                 display: inline-block;
             }
+            #self_create{
+                margin: auto;
+                text-align: center;
+            }
         </style>
     </head>
     <body oncontextmenu='self.event.returnValue=false'>
@@ -51,13 +55,18 @@
         </div>
         <table border="1" cellspacing="0" id="grid"></table>
         <div id="bottom_bar">
-            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,15)" value="初级"></span>
-            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,40)" value="中级"></span>
-            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,65)" value="高级"></span>
-            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,100)" value="专家(以后几种很可能需要靠运气)"></span>
-            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,150)" value="地狱"></span>
-            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,223)" value="欧皇"></span>
-            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,223)" value="自定义"></span>
+            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,15,'初级')" value="初级"></span>
+            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,40,'中级')" value="中级"></span>
+            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,65,'高级')" value="高级"></span>
+            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,100,'专家')" value="专家(以后几种很可能需要靠运气)"></span>
+            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,150,'地狱')" value="地狱"></span>
+            <span class="bottom_bar"><input type="button" onclick="re_init_show(15,15,223,'欧皇')" value="欧皇"></span>
+        </div>
+        <div id="self_create">
+            <span class="self_create">行数:<input id="create_row" type="number" value="15"></span>
+            <span class="self_create">列数:<input id="create_column" type="number" value="15"></span>
+            <span class="self_create">雷数:<input id="create_mine" type="number" value="30"></span>
+            <span class="self_create"><input type="button" onclick="re_init_show(0,0,0,'自定义')" value="生成"></span>
         </div>
         <script>
             var remain = document.getElementById('remain');
@@ -78,10 +87,19 @@
             var grid = init_show();
 
             //重新生成的表格
-            function re_init_show(row1, column1, mine1) {
+            function re_init_show(row1, column1, mine1, mode) {
+                alert("你选择了:" + mode + "模式");
+                if (row1 === column1 && column1 === mine1 && mine1 === 0){
+                    let rowElement = document.getElementById('create_row');
+                    let columnElement = document.getElementById('create_column');
+                    let mineElement = document.getElementById('create_mine');
+                    row1 = parseInt(rowElement.value);
+                    column1 = parseInt(columnElement.value);
+                    mine1 = parseInt(mineElement.value);
+                }
                 remain.innerHTML = '0'
                 all_count.innerHTML = '0'
-                time.innerHTML = '0s'
+                time.innerHTML = '0'
                 row = row1;
                 column = column1;
                 mine = mine1;
@@ -200,6 +218,9 @@
 
 
             function block_click(x,y,e) {
+                if (game_over){
+                    return;
+                }
                 if (e.button === 0){
                     //左键单击
                     if(initialize === 0){
@@ -255,7 +276,7 @@
                             }
                         }
                     }
-                    alert('boom!!! 游戏结束,刷新再来一局吧');
+                    alert('游戏结束,刷新再来一局吧');
                     return;
                 }
                 for (let i = 0; i < row; i++) {
