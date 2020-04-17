@@ -32,7 +32,7 @@
             var mine = 20
             // 表格的数据
             var data = new Array()
-            //是否显示这一格,0为默认不显示，1是标记
+            //是否显示这一格,0为默认不显示,1是显示,2是标记
             var data_show = new Array();
             //存储表格
             var grid = init_show()
@@ -67,7 +67,7 @@
                 }
             }
 
-            //增加雷坐标处附近的计数
+            //增加雷坐标处附近的计数,初始化时调用
             function count_mine(x,y) {
                 try{
                     if (data[x-1][y] != 9){
@@ -141,12 +141,9 @@
                     if(initialize === 0){
                         initialize = 1
                         init(x, y)
-                        data_show[x][y] = 1
+                        open(x,y)
                     } else {
-                        if (data[x][y] === 9){
-                            gameover = true
-                        }
-                        data_show[x][y] = 1
+                        open(x,y)
                     }
                 } else if (e.button === 2){
                     //右键单击
@@ -162,13 +159,29 @@
             }
 
             function reshow() {
+                //游戏结束显示所有的雷
                 if (gameover){
+                    for (let i = 0; i < row; i++) {
+                        for (let j = 0; j < column; j++) {
+                            if(data_show[i][j] === 1){
+                                grid[i][i].style.backgroud = '#ccc'
+                                grid[i][j].innerHTML = data[i][j]
+                            } else if(data[i][j] === 9){
+                                grid[i][j].innerHTML = '雷'
+                            } else{
+                                grid[i][j].innerHTML = ''
+                            }
+                        }
+                    }
                     alert('游戏结束,刷新再来一局吧')
                     return
                 }
                 for (let i = 0; i < row; i++) {
                     for (let j = 0; j < column; j++) {
                         if(data_show[i][j] === 1){
+                            //点击后的格子重新设置样式
+                            grid[i][j].style.cursor = 'default'
+                            grid[i][j].style.backgroud = 'gray'
                             grid[i][j].innerHTML = data[i][j]
                         } else if(data_show[i][j] === 2){
                             grid[i][j].innerHTML = '⚠'
@@ -177,23 +190,62 @@
                         }
                     }
                 }
-                //计数未翻开的格子，如果恰好是雷的数目，游戏成功
+                //计数翻开的格子，如果恰好是雷的数目的补，游戏成功
                 let count = 0
                 for (let i = 0; i < row; i++) {
-                    for (let j = 0; j < array.column; j++) {
-                        if(data_show[i][j] === 0){
+                    for (let j = 0; j < column; j++) {
+                        if(data_show[i][j] === 1){
                             count++
                         }
                     }
                 }
-                if (count === mine_count) {
+                if (row * column - count === mine) {
                     alert('你成功了')
                 }
             }
 
             //点开x,y单元格
             function open(x,y){
-
+                if (data[x][y] === 9){
+                    gameover = true
+                } else if (!gameover){
+                    data_show[x][y] = 1
+                    //空白处递归显示单元格
+                    if (data[x][y] === 0){
+                        //左
+                        if (x > 0 && data_show[x - 1][y] != 1) {
+                            open(x - 1, y)
+                        }
+                        //右
+                        if (x < column - 1 && data_show[x + 1][y] != 1) {
+                            open(x + 1,y)
+                        }
+                        //上
+                        if (y > 0 && data_show[x][y - 1] != 1) {
+                            open(x, y - 1)
+                        }
+                        //下
+                        if (y < row - 1 && data_show[x][y + 1] != 1) {
+                            open(x, y + 1)
+                        }
+                        //左上
+                        if (x > 0 && y > 0 && data_show[x - 1][y - 1] != 1){
+                            open(x - 1,y - 1)
+                        }
+                        //左下
+                        if (x > 0 && y < row - 1 && data_show[x - 1][y + 1] != 1) {
+                            open(x - 1, y + 1)
+                        }
+                        //右上
+                        if (x < column - 1 && y > 0 && data_show[x + 1][y - 1] != 1) {
+                            open(x + 1, y - 1)
+                        }
+                        //右下
+                        if (x < column - 1 && y < row - 1 && data_show[x + 1][y + 1] != 1) {
+                            open(x + 1, y + 1)
+                        }
+                    }
+                }
             }
         </script>
     </body>
