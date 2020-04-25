@@ -144,24 +144,50 @@
                     let seconds = (parseFloat(time.innerHTML) + 1);
                     time.innerHTML = seconds.toString();
                 }, 1000);
-                //初始化表格中的雷，并确保第一个不是雷
-                for (let i = 0; i < row; i++) {
+                //计数生成的雷到没到
+                let add_count = 0;
+                //生成n个雷
+                for (let i = 0; i < row; i++){
                     data[i] = [];
                     data_show[i] = [];
                     for (let j = 0; j < column; j++) {
-                        data[i][j] = 0;
+                        if (add_count < mine){
+                            add_count++;
+                            data[i][j] = 9;
+                        } else {
+                            data[i][j] = 0;
+                        }
                         data_show[i][j] = 0;
                     }
                 }
-                for (let i = 0; i < mine; i++) {
-                    let x = Math.floor(Math.random() * row);
-                    let y = Math.floor(Math.random() * column);
-                    if (data[x][y] !== 9 && (x!== click_x || y !== click_y)) {
-                        data[x][y] = 9;
-                    } else {
-                        i--;
+                //洗牌算法建立随机雷阵
+                for (let i = 0; i < row; i++) {
+                    for (let j = 0; j < column; j++) {
+                        let change_x = Math.floor(Math.random() * row);
+                        let change_y = Math.floor(Math.random() * column);
+                        let temp = data[i][j];
+                        data[i][j] = data[change_x][change_y];
+                        data[change_x][change_y] = temp;
                     }
                 }
+
+                //确保点击的地方不是雷，用第一个非雷交换
+                for (let i = 0; i < row; i++) {
+                    //交换完成退出
+                    let succeed = false
+                    if (succeed){
+                        break;
+                    }
+                    for (let j = 0; j < column; j++) {
+                        if (data[i][j] == 0){
+                            succeed = true;
+                            let temp = data[i][j];
+                            data[i][j] = data[click_x][click_y];
+                            data[click_x][click_y] = temp;
+                        }
+                    }
+                }
+
                 //计算每个单元格附近的雷的数目
                 for (let i = 0; i < row; i++) {
                     for (let j = 0; j < column; j++) {
